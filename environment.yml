@@ -1,0 +1,4 @@
+name: marcxml2csv
+dependencies:
+  - python=3
+  - lxml
