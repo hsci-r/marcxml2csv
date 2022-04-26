@@ -12,8 +12,9 @@ import csv
 import argparse
 
 def parse_arguments():
-    ap = argparse.ArgumentParser(description="MARCXML to CSV converter")  
-    ap.add_argument("-o","--output",help="Output CSV file",required=True)
+    ap = argparse.ArgumentParser(description="MARCXML to CSV/TSV converter")  
+    ap.add_argument("-o","--output",help="Output CSV/TSV file",required=True)
+    ap.add_argument("-t","--tsv",help="Write output as TSV instead of CSV",action=argparse.BooleanOptionalAction)
     ap.add_argument("-i","--input",help="Input MARXCML file",required=True)
     return (ap.parse_args())
 
@@ -41,9 +42,9 @@ def convert_record(n,record,co):
         f+=1
 
 
-def convert(input: str, output: str) -> None:
+def convert(input: str, output: str, tsv: bool) -> None:
     with open(output,"w") as of:
-        co = csv.writer(of)
+        co = csv.writer(of,delimiter='\t' if tsv else ',')
         co.writerow(['record_number','field_number','subfield_number','field_code','subfield_code','value'])
         n = 1
         context = etree.iterparse(input, events=('end',), tag='{http://www.loc.gov/MARC21/slim}record')
@@ -59,7 +60,7 @@ def convert(input: str, output: str) -> None:
 
 def main():
     args = parse_arguments()
-    convert(args.input,args.output)
+    convert(args.input,args.output,args.tsv)
     
 if __name__ == '__main__':
     main()

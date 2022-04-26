@@ -1,6 +1,6 @@
 # marcxml2csv
 
-A simple converter of MARCXML to CSV. The resulting CSV has been designed to be easy to use as a data table, but also to retain all ordering informaation in the original when such is needed. The format is as follows:
+A simple converter of MARCXML to CSV/TSV. The resulting CSV/TSV has been designed to be easy to use as a data table, but also to retain all ordering informaation in the original when such is needed. The format is as follows:
 `record_number,field_number,subfield_number,field_code,subfield_code,value`
 
 Here, `record_number` identifies the MARC record, while `field_number` and `subfield_number` can be used for more exact filtering / reconstructing the original MARC flow if needed.
