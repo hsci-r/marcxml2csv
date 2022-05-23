@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "marcxml2csv"
-version = "1.0.2"
+version = "1.0.3"
 description = "A simple converter of MARCXML/PICAXML to CSV/TSV"
 authors = ["Eetu Mäkelä <eetu.makela@helsinki.fi>"]
 readme = "README.md"
@@ -25,8 +25,8 @@ pre-commit = "^2.13.0"
 pylint = "^2.13.9"
 
 [tool.poetry.scripts]
-picaxml2csv = "picaxml2csv:convert"
-marcxml2csv = "marcxml2csv:convert"
+picaxml2csv = "marcxml2csv.picaxml2csv:convert"
+marcxml2csv = "marcxml2csv.marcxml2csv:convert"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
