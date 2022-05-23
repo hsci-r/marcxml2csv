@@ -16,25 +16,14 @@ from lxml import etree
 import tqdm
 
 
-def convert_record(n, record, co):
+def convert_record(n, record, co) -> None:
     f = 1
     for field in record:
-        if field.tag == '{http://www.loc.gov/MARC21/slim}leader':
-            co.writerow([n, f, '', 'leader', '', field.text])
-        elif field.tag == '{http://www.loc.gov/MARC21/slim}controlfield':
-            co.writerow(([n, f, '', field.attrib['tag'], '', field.text]))
-        elif field.tag == '{http://www.loc.gov/MARC21/slim}datafield':
-            tag = field.attrib['tag']
-            if field.attrib['ind1'] != ' ':
-                co.writerow([n, f, '', tag, 'ind1', field.attrib['ind1']])
-            if field.attrib['ind2'] != ' ':
-                co.writerow([n, f, '', tag, 'ind2', field.attrib['ind2']])
-            sf = 1
-            for subfield in field:
-                co.writerow([n, f, sf, tag, subfield.attrib['code'], subfield.text])
-                sf += 1
-        else:
-            raise Exception('Unknown field ' + field.tag)
+        tag = field.attrib['tag']
+        sf = 1
+        for subfield in field:
+            co.writerow([n, f, sf, tag, subfield.attrib['code'], subfield.text])
+            sf += 1
         f += 1
 
 
@@ -42,7 +31,7 @@ def convert_record(n, record, co):
 @click.option("-o", "--output", help="Output CSV/TSV (gz) file", required=True)
 @click.argument('input', nargs=-1, type=click.Path())
 def convert(input: list[str], output: str) -> None:
-    """Convert from MARCXML (gz) input files into (gzipped) CSV/TSV"""
+    """Convert from PICAXML (gz) input files into (gzipped) CSV/TSV"""
     with gzip.open(output, 'wt') if output.endswith(".gz") else open(output, "wt") as of:
         co = csv.writer(of, delimiter='\t' if '.tsv' in output else ',')
         co.writerow(['record_number', 'field_number', 'subfield_number', 'field_code', 'subfield_code', 'value'])
@@ -54,7 +43,7 @@ def convert(input: list[str], output: str) -> None:
             pbar.set_description(f"Processing {input_path}")
             with open(input_path, "rb") as oinf:
                 with gzip.open(oinf, 'rb') if input_path.endswith(".gz") else oinf as inf:
-                    context = etree.iterparse(inf, events=('end',), tag='{http://www.loc.gov/MARC21/slim}record')
+                    context = etree.iterparse(inf, events=('end',), tag='{info:srw/schema/5/picaXML-v1.0}record')
                     for _, elem in context:
                         convert_record(n, elem, co)
                         n += 1
