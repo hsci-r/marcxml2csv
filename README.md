@@ -1,6 +1,6 @@
 # marcxml2csv
 
-A simple converter of (possibly gzipped) MARCXML/PICAXML to (possibly gzipped) CSV/TSV. 
+A simple converter of (possibly gzipped) MARCXML/PICAXML to (possibly gzipped) CSV/TSV.
 
 The resulting CSV/TSV has been designed to be easy to use as a data table, but also to retain all ordering informaation in the original when such is needed. The format is as follows:
 `record_number,field_number,subfield_number,field_code,subfield_code,value`

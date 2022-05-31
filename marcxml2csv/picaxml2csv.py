@@ -12,8 +12,8 @@ import os
 from functools import reduce
 
 import click as click
-from lxml import etree
 import tqdm
+from lxml import etree
 
 
 def convert_record(n, record, co) -> None:
