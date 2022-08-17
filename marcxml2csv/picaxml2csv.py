@@ -12,6 +12,7 @@ import os
 from functools import reduce
 
 import click as click
+from hsciutil.fs import expand_globs
 import tqdm
 from lxml import etree
 
@@ -29,17 +30,18 @@ def convert_record(n, record, co) -> None:
 
 @click.command
 @click.option("-o", "--output", help="Output CSV/TSV (gz) file", required=True)
-@click.argument('input', nargs=-1, type=click.Path())
+@click.argument('input', nargs=-1, type=click.Path(exists=True))
 def convert(input: list[str], output: str) -> None:
-    """Convert from PICAXML (gz) input files into (gzipped) CSV/TSV"""
+    """Convert from PICAXML (gz) INPUT files (actually glob patterns, parsed recursively) into (gzipped) CSV/TSV"""
     with gzip.open(output, 'wt') if output.endswith(".gz") else open(output, "wt") as of:
         co = csv.writer(of, delimiter='\t' if '.tsv' in output else ',')
         co.writerow(['record_number', 'field_number', 'subfield_number', 'field_code', 'subfield_code', 'value'])
         n = 1
-        tsize = reduce(lambda tsize, tweet_file_name: tsize + os.path.getsize(tweet_file_name), input, 0)
+        input_files = list(expand_globs(input, recurse=True))
+        tsize = reduce(lambda tsize, tweet_file_name: tsize + os.path.getsize(tweet_file_name), input_files, 0)
         pbar = tqdm.tqdm(total=tsize, unit='b', unit_scale=True, unit_divisor=1024)
         processed_files_tsize = 0
-        for input_path in input:
+        for input_path in input_files:
             pbar.set_description(f"Processing {input_path}")
             with open(input_path, "rb") as oinf:
                 with gzip.open(oinf, 'rb') if input_path.endswith(".gz") else oinf as inf:
