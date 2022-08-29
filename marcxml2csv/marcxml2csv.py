@@ -8,8 +8,13 @@ Created on Mon Feb 15 18:59:15 2021
 
 import csv
 import gzip
+import itertools
 import os
+import zipfile
 from functools import reduce
+from pathlib import Path
+from typing import Iterator, Tuple
+
 from hsciutil.fs import expand_globs
 
 import click as click
@@ -43,19 +48,25 @@ def convert_record(n, record, co):
 @click.option("-o", "--output", help="Output CSV/TSV (gz) file", required=True)
 @click.argument('input', nargs=-1)
 def convert(input: list[str], output: str) -> None:
-    """Convert from MARCXML (gz) INPUT files (actually glob patterns, parsed recursively) into (gzipped) CSV/TSV"""
+    """Convert from MARCXML (gz/zip) INPUT files (actually glob patterns, parsed recursively) into (gzipped) CSV/TSV"""
     with gzip.open(output, 'wt') if output.endswith(".gz") else open(output, "wt") as of:
         co = csv.writer(of, delimiter='\t' if '.tsv' in output else ',')
         co.writerow(['record_number', 'field_number', 'subfield_number', 'field_code', 'subfield_code', 'value'])
         n = 1
-        input_files = list(expand_globs(input, recurse=True))
-        tsize = reduce(lambda tsize, tweet_file_name: tsize + os.path.getsize(tweet_file_name), input_files, 0)
+
+        def iterate_zipfile(input: Path) -> Iterator[Tuple[Path, int]]:
+            zf = zipfile.ZipFile(input)
+            zp = zipfile.Path(zf)
+            return map(lambda filepath: (filepath,zf.getinfo(filepath.name).file_size), zp.iterdir())
+
+        input_files = list(itertools.chain.from_iterable(map(lambda path: iterate_zipfile(path) if path.name.endswith(".zip") else [(path, path.stat().st_size)], expand_globs(input, recurse=True))))
+        tsize = reduce(lambda tsize, path: tsize + path[1], input_files, 0)
         pbar = tqdm.tqdm(total=tsize, unit='b', unit_scale=True, unit_divisor=1024)
         processed_files_tsize = 0
-        for input_path in input_files:
+        for (input_path, input_size) in input_files:
             pbar.set_description(f"Processing {input_path}")
-            with open(input_path, "rb") as oinf:
-                with gzip.open(oinf, 'rb') if str(input_path).endswith(".gz") else oinf as inf:
+            with input_path.open("rb") as oinf:
+                with gzip.open(oinf, 'rb') if input_path.name.endswith(".gz") else oinf as inf:
                     context = etree.iterparse(inf, events=('end',), tag='{http://www.loc.gov/MARC21/slim}record')
                     for _, elem in context:
                         convert_record(n, elem, co)
@@ -66,7 +77,7 @@ def convert(input: list[str], output: str) -> None:
                         pbar.n = processed_files_tsize + oinf.tell()
                         pbar.update(0)
                     del context
-            processed_files_tsize += os.path.getsize(input_path)
+            processed_files_tsize += input_size
 
 
 if __name__ == '__main__':
