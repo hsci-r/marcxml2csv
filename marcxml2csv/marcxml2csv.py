@@ -15,10 +15,9 @@ from functools import reduce
 from pathlib import Path
 from typing import Iterator, Tuple
 
-from hsciutil.fs import expand_globs
-
 import click as click
 import tqdm
+from hsciutil.fs import expand_globs
 from lxml import etree
 
 
@@ -57,9 +56,10 @@ def convert(input: list[str], output: str) -> None:
         def iterate_zipfile(input: Path) -> Iterator[Tuple[Path, int]]:
             zf = zipfile.ZipFile(input)
             zp = zipfile.Path(zf)
-            return map(lambda filepath: (filepath,zf.getinfo(filepath.name).file_size), zp.iterdir())
+            return map(lambda filepath: (filepath, zf.getinfo(filepath.name).file_size), zp.iterdir())
 
-        input_files = list(itertools.chain.from_iterable(map(lambda path: iterate_zipfile(path) if path.name.endswith(".zip") else [(path, path.stat().st_size)], expand_globs(input, recurse=True))))
+        input_files = list(itertools.chain.from_iterable(map(lambda path: iterate_zipfile(path) if path.name.endswith(
+            ".zip") else [(path, path.stat().st_size)], expand_globs(input, recurse=True))))
         tsize = reduce(lambda tsize, path: tsize + path[1], input_files, 0)
         pbar = tqdm.tqdm(total=tsize, unit='b', unit_scale=True, unit_divisor=1024)
         processed_files_tsize = 0
