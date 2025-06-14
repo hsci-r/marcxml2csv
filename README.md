@@ -1,40 +1,38 @@
-# marcxml2csv
+# bibxml2
 
-A simple converter of (possibly gzipped) MARCXML/PICAXML to (possibly gzipped) CSV/TSV.
+A simple converter of (possibly compressed) MARCXML/PICAXML to (possibly compressed) CSV/TSV/parquet.
 
-The resulting CSV/TSV has been designed to be easy to use as a data table, but also to retain all ordering informaation in the original when such is needed. The format is as follows:
+The resulting CSV/TSV/parquet has been designed to be easy to use as a data table, but also to retain all ordering informaation in the original when such is needed. The format is as follows:
 `record_number,field_number,subfield_number,field_code,subfield_code,value`
 
-Here, `record_number` identifies the MARC/PICA+ record, while `field_number` and `subfield_number` can be used for more exact filtering / reconstructing the original field flow if needed.
+Here, `record_number` identifies the MARC/PICA+ record, while `field_number` and `subfield_number` can be used for more exact filtering / reconstructing the original field structure/order if needed.
 
-For the MARC leader and control fields, `subfield_number` will be empty.
-
-For MARC data fields, `ind1` and `ind2` values are reported as separate rows with the `subfield_code` being `ind1` or `ind2`, but only when non-empty. The also have an empty `subfield_number`.
+For MARC data fields, `ind1` and `ind2` values are reported as separate rows with the `subfield_code` being `i_1` or `i_2`, but only when non-empty.
 
 ## Installation
 
-Install from pypi with e.g. `pipx install marcxml2csv`.
+Install from pypi with e.g. `pipx install bibxml2`.
 
 ## Usage
 
-```
-Usage: marcxml2csv [OPTIONS] [INPUT]...
+```sh
+Usage: marcxml2 [OPTIONS] [INPUT]...
 
-  Convert from MARCXML (gz) input files into (gzipped) CSV/TSV
+  Convert from MARCXML (compressed) input files into (compressed) CSV/TSV/parquet
 
 Options:
-  -o, --output TEXT  Output CSV/TSV (gz) file  [required]
+  -o, --output TEXT  Output CSV/TSV (compressed) / parquet file  [required]
   --help             Show this message and exit.
 ```
 
-```
+```sh
 Usage: picaxml2csv [OPTIONS] [INPUT]...
 
-  Convert from PICAXML (gz) input files into (gzipped) CSV/TSV
+  Convert from PICAXML (compressed) input files into (compressed) CSV/TSV/parquet
 
 Options:
-  -o, --output TEXT  Output CSV/TSV (gz) file  [required]
+  -o, --output TEXT  Output CSV/TSV (compressed) / parquet file  [required]
   --help             Show this message and exit.
 ```
 
-Files will be read/written using gzip if the filename ends with `.gz`. TSV format will be used if the output filename contains `.tsv`, otherwise CSV will be used.
+If the output file extension is `.parquet`, the output will be in parquet format, compressed with `zstd`, and with field typings maximally compatible with common R and Python ecosystems. Otherwise, compressed files will be read/written if the filename ends with an identifier recognised by fsspec. TSV format will be used if the output filename contains `.tsv`, otherwise CSV will be used.

@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "marcxml2csv"
-version = "1.0.5"
-description = "A simple converter of MARCXML/PICAXML to CSV/TSV"
+version = "1.1.1"
+description = "A simple converter of MARCXML/PICAXML to CSV/TSV/parquet"
 authors = ["Eetu Mäkelä <eetu.makela@helsinki.fi>"]
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/hsci-r/marcxml2csv"
+repository = "https://github.com/hsci-r/bibxml2"
 keywords = [
     "MARCXML",
     "PICA XML",
@@ -14,20 +14,23 @@ keywords = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-lxml = "^4.8.0"
-click = "^8.1.3"
-tqdm = "^4.64.0"
-hsciutil = "^0.1.2"
+python = ">=3.10,<4.0"
+lxml = ">=5.4.0"
+click = ">=8.2.1"
+tqdm = ">=4.67.1"
+hsciutil = ">=0.1.2"
+fsspec = "^2025.5.1"
+pyarrow = "^20.0.0"
+s3fs = "^2025.5.1"
 
 [tool.poetry.dev-dependencies]
-autopep8 = "^1.5.7"
-pre-commit = "^2.13.0"
-pylint = "^2.13.9"
+autopep8 = "^1.7.0"
+pre-commit = "^2.21.0"
+pylint = "^2.17.7"
 
 [tool.poetry.scripts]
-picaxml2csv = "marcxml2csv.picaxml2csv:convert"
-marcxml2csv = "marcxml2csv.marcxml2csv:convert"
+picaxml2 = "bibxml2.picaxml2:convert_picaxml"
+marcxml2 = "bibxml2.marcxml2:convert_marcxml"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
