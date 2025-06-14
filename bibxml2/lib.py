@@ -28,7 +28,7 @@ def convert(tag: str, convert_record: Callable[[lxml.etree._ElementIterator], It
             schema=schema, 
             compression='zstd', 
             compression_level=22,
-            use_byte_stream_split=['record_number', 'field_number', 'subfield_number'], # type: ignore
+#            use_byte_stream_split=['record_number', 'field_number', 'subfield_number'], # type: ignore pyarrow import complains: BYTE_STREAM_SPLIT encoding is only supported for FLOAT or DOUBLE data
             write_page_index=True, 
             use_dictionary=['field_code', 'subfield_code'], # type: ignore
             store_decimal_as_integer=True,
