@@ -7,11 +7,11 @@ from functools import reduce
 from typing import Callable, Iterator, cast
 
 import click as click
-import tqdm
 import lxml.etree
 import fsspec
 from fsspec.core import OpenFile, compr, infer_compression
 import _csv
+from tqdm.auto import tqdm
 
 schema: pa.Schema = pa.schema([ # R compatibility schema
             pa.field('record_number', pa.int32()),
@@ -41,7 +41,7 @@ def convert(tag: str, convert_record: Callable[[lxml.etree._ElementIterator], It
         n = 1
         input_files = fsspec.open_files(input, 'rb')
         tsize = reduce(lambda tsize, inf: tsize + inf.fs.size(inf.path), input_files, 0)
-        pbar = tqdm.tqdm(total=tsize, unit='b', unit_scale=True, unit_divisor=1024)
+        pbar = tqdm(total=tsize, unit='b', smoothing=0, unit_scale=True, unit_divisor=1024, dynamic_ncols=True)
         processed_files_tsize = 0
         for input_file in input_files:
             pbar.set_description(f"Processing {input_file.path}")
