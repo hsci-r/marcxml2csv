@@ -28,11 +28,11 @@ def convert(tag: str, convert_record: Callable[[lxml.etree._ElementIterator], It
             schema=schema, 
             compression='zstd', 
             compression_level=22,
-            use_byte_stream_split=True,
+            use_byte_stream_split=['record_number', 'field_number', 'subfield_number'], # type: ignore
             write_page_index=True, 
-            use_dictionary=True,
+            use_dictionary=['field_code', 'subfield_code'], # type: ignore
             store_decimal_as_integer=True,
-            sorting_columns=[pq.SortingColumn(0), pq.SortingColumn(1), pq.SortingColumn(2)]
+            sorting_columns=[pq.SortingColumn(0), pq.SortingColumn(1), pq.SortingColumn(2)],
         ) if writing_parquet else nullcontext(csv.writer(of, delimiter='\t' if '.tsv' in output else ',')) as ow:
         if writing_parquet:
             batch = []
@@ -57,8 +57,7 @@ def convert(tag: str, convert_record: Callable[[lxml.etree._ElementIterator], It
                             if writing_parquet:
                                 batch.append((n, *row))
                                 if len(batch) == 1024*1024:
-                                    cast(pq.ParquetWriter, ow).write_batch(pa.record_batch(list(zip(*batch)),
-                                        schema=schema))
+                                    cast(pq.ParquetWriter, ow).write_batch(pa.record_batch(list(zip(*batch)), schema=schema))
                                     batch = []
                             else:
                                 cast(_csv.Writer, ow).writerow((n, *row))
@@ -70,3 +69,5 @@ def convert(tag: str, convert_record: Callable[[lxml.etree._ElementIterator], It
                         pbar.update(0)
                     del context
             processed_files_tsize += input_file.fs.size(input_file.path)
+        if writing_parquet and batch:
+            cast(pq.ParquetWriter, ow).write_batch(pa.record_batch(list(zip(*batch)), schema=schema))
